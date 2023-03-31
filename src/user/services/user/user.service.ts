@@ -10,4 +10,8 @@ export class UserService {
   fetchUsers() {
     return this.users;
   }
+  fetchUserById(id: number) {
+    return null;
+    // return { id, ...this.users[0] };
+  }
 }
