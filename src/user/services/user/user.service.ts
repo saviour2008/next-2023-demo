@@ -11,7 +11,7 @@ export class UserService {
     return this.users;
   }
   fetchUserById(id: number) {
-    return null;
-    // return { id, ...this.users[0] };
+    // return null;
+    return { id, ...this.users[0] };
   }
 }
