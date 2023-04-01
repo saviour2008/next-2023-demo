@@ -1,44 +1,14 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Post } from 'src/typeorm/entities/post';
+import { Profile } from 'src/typeorm/entities/profile';
+import { User } from 'src/typeorm/entities/user';
 import { UserController } from './controllers/user/user.controller';
-import { AnotherMiddleware } from './middlewares/another/another.middleware';
-import { ExampleMiddleware } from './middlewares/example/example.middleware';
 import { UserService } from './services/user/user.service';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([User, Profile, Post])],
   controllers: [UserController],
   providers: [UserService],
 })
-export class UserModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // consumer.apply(ExampleMiddleware).forRoutes('user');
-    // consumer.apply(ExampleMiddleware).forRoutes(UserController);
-    consumer
-      .apply(ExampleMiddleware)
-      .forRoutes(
-        {
-          path: 'user',
-          method: RequestMethod.GET,
-        },
-        {
-          path: 'user/:id/:postId',
-          method: RequestMethod.GET,
-        },
-      )
-      .apply(AnotherMiddleware)
-      .forRoutes(
-        {
-          path: 'user',
-          method: RequestMethod.GET,
-        },
-        {
-          path: 'user/:id/:postId',
-          method: RequestMethod.GET,
-        },
-      );
-  }
-}
+export class UserModule {}

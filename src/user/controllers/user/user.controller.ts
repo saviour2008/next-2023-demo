@@ -1,53 +1,63 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
-  ParseBoolPipe,
   ParseIntPipe,
+  Patch,
   Post,
-  Query,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
-import { UserDataDTO } from 'src/user/dtos/userData.dto';
-import { AuthGuard } from 'src/user/guards/auth/auth.guard';
-import { ValidateCreateUserPipe } from 'src/user/pipes/validate-create-user/validate-create-user.pipe';
+import { CreateUserDTO } from 'src/user/dtos/createUser.dto';
+import { CreateUserPostDTO } from 'src/user/dtos/createUserPost.dto';
+import { CreateUserProfileDTO } from 'src/user/dtos/createUserProfile.dto';
+import { UpdateUserDTO } from 'src/user/dtos/updateUser.dto';
 import { UserService } from 'src/user/services/user/user.service';
 
-@Controller('user')
-// @UseGuards(AuthGuard)
+@Controller('users')
 export class UserController {
   constructor(public userService: UserService) {}
+
   @Get()
-  getUsers(@Query('sortBy', ParseBoolPipe) sortBy: boolean) {
-    // get请求的query参数
-    console.log(sortBy);
-    const users = this.userService.fetchUsers();
-    // return { name: 'zhangliang', age: 18 };
-    return { sortBy, users };
+  async getUsers() {
+    const users = await this.userService.getUsers();
+    return users;
   }
 
   @Post('create')
-  @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe()) // 给输入的post内容加校验，跟body对应的entity一致
-  createUser(@Body(ValidateCreateUserPipe) userData: UserDataDTO) {
-    return {};
+  createUser(@Body() userData: CreateUserDTO) {
+    const { confirmPassword, ...userDataDetail } = userData;
+    this.userService.createUser(userDataDetail);
   }
 
-  @Get(':id/:postId')
-  getUserById(
-    @Param('id', ParseIntPipe) id: number, // ParseIntPipe就是把字符串转换成number类型
-    @Param('postId') postId: string,
+  @Patch(':id')
+  async updateUserById(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUser: UpdateUserDTO,
   ) {
-    console.log(typeof id);
-    const user = this.userService.fetchUserById(id);
-    if (!user) {
-      throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
-    }
-    return user;
+    await this.userService.updateUser(id, updateUser);
+    return { msg: '更新成功' };
+  }
+
+  @Delete(':id')
+  async deleteUserById(@Param('id', ParseIntPipe) id: number) {
+    await this.userService.deleteUser(id);
+    return { msg: '删除成功' };
+  }
+
+  @Post(':id/profile')
+  createUserProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() createUserProfile: CreateUserProfileDTO,
+  ) {
+    return this.userService.createUserProfile(id, createUserProfile);
+  }
+
+  @Post(':id/post')
+  createUserPost(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() createUserPost: CreateUserPostDTO,
+  ) {
+    return this.userService.createUserPost(id, createUserPost);
   }
 }
